@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Pictures from "./Pictures";
+import Drop from "./Drop";
 import { useDrop } from "react-dnd";
+import { useDragLayer } from "react-dnd";
 
 const objectList = [
   {
@@ -19,47 +21,49 @@ const objectList = [
 
 function Drag() {
   const [board, setBoard] = useState<any>([]);
+  const [droppedItem, setDroppedItem] = useState<any>();
 
   const [{ isOver }, drop]: any = useDrop<any>(() => ({
     accept: "image",
-    drop: (item) => addImageToBoard(item.id),
+    drop: (item) => addImageToBoard(item),
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
   }));
 
-  const addImageToBoard = (id: any) => {
-    const dupeCheck = board.map((obj: any) => {
-      console.log(obj.id, id);
-      if (obj.id === id) {
-        return true;
-      }
-      return false;
-    });
-
-    console.log(dupeCheck);
-
-    const pictureList = objectList.filter((pic) => id === pic.id);
-    console.log(pictureList);
-
-    setBoard((board: any) => [...board, pictureList[0]]);
+  const addImageToBoard = (item: any) => {
+    setDroppedItem(item);
   };
+
+  useEffect(() => {
+    if (droppedItem) {
+      if (board.some((obj: any) => obj.id === droppedItem.id)) {
+        return;
+      }
+      const pictureList = objectList.filter(
+        (pic) => droppedItem?.id === pic.id
+      );
+      setBoard((board: any) => [...board, pictureList[0]]);
+      setDroppedItem(undefined);
+    }
+  }, [droppedItem, board]);
 
   const removeFromBoard = (id: number) => {
     const pictures = board.filter((pic: any) => id !== pic.id);
     setBoard([...pictures]);
+    setDroppedItem(undefined);
   };
 
   return (
     <div>
       <div>
         {objectList.map((arr): any => {
-          return <Pictures removeFromBoard={removeFromBoard} arr={arr} />;
+          return <Pictures arr={arr} />;
         })}
       </div>
       <div className="drop-area" ref={drop}>
-        {board.map((image: any) => {
-          return <Pictures removeFromBoard={removeFromBoard} arr={image} />;
+        {board?.map((image: any) => {
+          return <Drop removeFromBoard={removeFromBoard} arr={image} />;
         })}
       </div>
     </div>

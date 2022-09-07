@@ -1,15 +1,9 @@
 import { useDrag } from "react-dnd";
 
-function Pictures({
-  arr,
-  removeFromBoard,
-}: {
-  arr: any;
-  removeFromBoard: (id: number) => void;
-}) {
+function Pictures({ arr }: { arr: any }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "image",
-    item: { id: arr.id },
+    item: { ...arr },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -17,7 +11,6 @@ function Pictures({
 
   return (
     <img
-      onClick={() => removeFromBoard(arr.id)}
       ref={drag}
       src={arr.url}
       alt=""
